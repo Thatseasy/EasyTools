@@ -59,3 +59,66 @@ export async function markdownToHtml(markdown: string) {
   const result = await remark().use(html).process(markdown);
   return result.toString();
 }
+
+export async function fetchGithubReadme(repo: string): Promise<string | null> {
+  if (!repo) return null;
+  const headers: HeadersInit = {
+    'Accept': 'application/vnd.github.v3.raw',
+    'User-Agent': 'EasyTools-NextJS'
+  };
+  if (process.env.GITHUB_TOKEN) {
+    headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+  }
+  
+  try {
+    const res = await fetch(`https://api.github.com/repos/${repo}/readme`, {
+      headers,
+      next: { revalidate: 3600 } // Cache for 1 hour
+    });
+    if (!res.ok) {
+      console.error(`Failed to fetch README for ${repo}: ${res.statusText}`);
+      return null;
+    }
+    return await res.text();
+  } catch (error) {
+    console.error(`Error fetching README for ${repo}:`, error);
+    return null;
+  }
+}
+
+export type GithubReleaseAsset = {
+  name: string;
+  browser_download_url: string;
+};
+
+export type GithubRelease = {
+  tag_name: string;
+  name: string;
+  assets: GithubReleaseAsset[];
+};
+
+export async function fetchGithubLatestRelease(repo: string): Promise<GithubRelease | null> {
+  if (!repo) return null;
+  const headers: HeadersInit = {
+    'Accept': 'application/vnd.github.v3+json',
+    'User-Agent': 'EasyTools-NextJS'
+  };
+  if (process.env.GITHUB_TOKEN) {
+    headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+  }
+  
+  try {
+    const res = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, {
+      headers,
+      next: { revalidate: 3600 }
+    });
+    if (!res.ok) {
+      console.error(`Failed to fetch latest release for ${repo}: ${res.statusText}`);
+      return null;
+    }
+    return await res.json();
+  } catch (error) {
+    console.error(`Error fetching release for ${repo}:`, error);
+    return null;
+  }
+}
