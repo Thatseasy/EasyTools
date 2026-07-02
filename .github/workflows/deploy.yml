@@ -3,6 +3,8 @@ name: Deploy Next.js site to Pages
 on:
   push:
     branches: ["main", "master"]
+  repository_dispatch:
+    types: [update-content]
   workflow_dispatch:
 
 permissions:
