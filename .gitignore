@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Private AI & Docs
+.agents/
+AGENTS.md
+CLAUDE.md
+easytools_notion_guide.md
